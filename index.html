@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="棋室公開大廳：一個大廳、一把鑰匙，讓同一個角色陪你走進每個房間。">
+  <title>棋室｜Chambre de Jeux</title>
+  <style>
+    :root {
+      --rose: #b76e79;
+      --rose-dark: #87525b;
+      --rose-soft: #ead2d6;
+      --line: #ecd8da;
+      --ink: #4a3728;
+      --muted: #8f797b;
+      --paper: #fffaf8;
+      --bg: #f7eef0;
+    }
+    * { box-sizing: border-box; }
+    html { min-width: 0; background: var(--bg); }
+    body {
+      min-width: 0; min-height: 100vh; margin: 0; color: var(--ink); background: var(--bg);
+      font-family: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+    button, input, textarea, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(183,110,121,.28); outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+    .page { width: min(920px, 100%); margin: 0 auto; padding: 28px 22px 44px; }
+    .topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
+    .brand { grid-column: 2; text-align: center; }
+    .eyebrow { margin: 0 0 7px; color: var(--rose-dark); font-size: .72rem; font-weight: 750; letter-spacing: .55em; text-indent: .55em; }
+    h1, .room-name {
+      font-family: "Snell Roundhand", "Savoye LET", "Segoe Script", "Brush Script MT", cursive;
+    }
+    h1 { margin: 0; color: var(--rose-dark); font-size: clamp(2rem, 6vw, 3.35rem); line-height: 1; font-weight: 700; }
+    .settings-button { white-space: nowrap;
+      grid-column: 3; justify-self: end; min-height: 38px; padding: 5px 3px; border: 0;
+      color: var(--rose-dark); background: transparent; cursor: pointer; font-weight: 750;
+    }
+    .intro { max-width: 500px; margin: 24px auto 30px; color: var(--muted); text-align: center; font-size: .92rem; line-height: 1.75; }
+    .rooms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .room {
+      position: relative; min-width: 0; min-height: 286px; overflow: hidden; padding: 22px 20px 20px;
+      border: 1px solid rgba(183,110,121,.17); border-radius: 24px; color: var(--ink); background: rgba(255,250,248,.64);
+      text-align: center; text-decoration: none; box-shadow: 0 12px 26px rgba(74,55,40,.06);
+    }
+    a.room { transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
+    /* 房卡圖＝業主算的公開版玻璃風四張（600×600 透明底，09-04 到貨），取代純 CSS 圖示（09-02 業主點單） */
+    img.sign-img { display: block; width: 170px; height: 170px; margin: 4px auto 10px; object-fit: contain; background: none; border: 0; box-shadow: none; filter: drop-shadow(0 10px 18px rgba(74,55,40,.16)); }
+    .room.disabled img.sign-img { opacity: .55; filter: grayscale(.35) drop-shadow(0 6px 12px rgba(74,55,40,.1)); }
+    a.room:hover { transform: translateY(-3px); background: var(--paper); box-shadow: 0 15px 30px rgba(74,55,40,.1); }
+    a.room:active { transform: scale(.985); }
+    .room.disabled { opacity: .52; cursor: default; }
+    .building { position: absolute; top: 14px; right: 15px; color: var(--muted); font-size: .7rem; letter-spacing: .12em; }
+    .sign {
+      position: relative; display: grid; place-items: center; width: min(160px, 62%); aspect-ratio: 1;
+      margin: 0 auto 8px; filter: drop-shadow(0 8px 11px rgba(74,55,40,.14));
+    }
+    .sign::before, .sign::after { content: ""; position: absolute; }
+    .sign-cartes::before {
+      width: 58%; aspect-ratio: 2 / 3; border: 2px solid #d8b9bd; border-radius: 13px;
+      background: var(--paper); transform: translateX(-12%) rotate(-8deg);
+    }
+    .sign-cartes::after {
+      width: 54%; aspect-ratio: 2 / 3; border: 2px solid #d8b9bd; border-radius: 13px;
+      background: linear-gradient(135deg, transparent 44%, var(--rose-soft) 45% 55%, transparent 56%), var(--paper);
+      transform: translateX(18%) rotate(7deg);
+    }
+    .card-mark { position: relative; z-index: 1; color: var(--rose); font: 700 2rem/1 Georgia, serif; transform: translate(12px, -2px); }
+    .sign-chess::before {
+      width: 58%; height: 18%; bottom: 21%; border-radius: 50%; background: var(--rose-dark);
+      box-shadow: 0 -16px 0 -3px var(--rose-dark), 0 -33px 0 -7px var(--rose-dark);
+    }
+    .sign-chess::after {
+      width: 29%; height: 36%; top: 20%; border-radius: 48% 48% 25% 25%; background: var(--paper);
+      border: 3px solid var(--rose-dark); transform: rotate(-9deg); box-shadow: 12px -3px 0 -4px var(--rose-dark);
+    }
+    .sign-gomoku { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 27px 27px; background-position: center; border-radius: 18px; }
+    .sign-gomoku::before { width: 24px; height: 24px; border-radius: 50%; background: var(--rose-dark); box-shadow: 28px 28px 0 var(--paper), -28px 28px 0 var(--rose-dark), 1px 56px 0 var(--paper); border: 1px solid rgba(74,55,40,.12); }
+    .sign-banqi::before { inset: 17%; border: 2px solid var(--rose-soft); border-radius: 14px; background: var(--paper); }
+    .sign-banqi::after { width: 45px; height: 45px; border-radius: 50%; background: var(--rose-soft); box-shadow: 42px 0 0 #dcc0b3, 0 42px 0 #dcc0b3, 42px 42px 0 var(--rose-soft); }
+    .banqi-mark { position: relative; z-index: 1; color: var(--rose-dark); font: 800 1.15rem/1 serif; transform: translate(-21px,-21px); }
+    .room-name { margin: 0; color: var(--rose-dark); font-size: 1.75rem; line-height: 1.1; }
+    .room-cn { margin: 4px 0 0; font-size: .82rem; font-weight: 750; letter-spacing: .18em; text-indent: .18em; }
+    .room-copy { max-width: 310px; margin: 11px auto 0; color: var(--muted); font-size: .83rem; line-height: 1.65; }
+    .seat-card {
+      display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; max-width: 610px;
+      margin: 30px auto 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,250,248,.7);
+    }
+    .seat-avatar { width: 58px; height: 58px; overflow: hidden; border: 3px solid #fff; border-radius: 50%; background: var(--rose-soft); box-shadow: 0 4px 12px rgba(74,55,40,.12); }
+    .seat-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .seat-avatar img[hidden] { display: none; }
+    .seat-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: var(--rose-dark); font-weight: 800; }
+    .seat-copy { min-width: 0; }
+    .seat-label { margin: 0 0 4px; color: var(--rose-dark); font-size: .72rem; font-weight: 800; letter-spacing: .18em; }
+    .seat-title { margin: 0; font-size: 1rem; font-weight: 800; overflow-wrap: anywhere; }
+    .seat-meta { margin: 4px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .field-hint { margin: 4px 0 10px; color: var(--muted); font-size: .76rem; line-height: 1.5; }
+    .field-hint a, .seat-meta a { color: var(--rose-dark); text-decoration: underline; text-underline-offset: 2px; }
+    footer { max-width: 680px; margin: 28px auto 0; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: .76rem; line-height: 1.75; }
+    .drawer-overlay { position: fixed; z-index: 20; inset: 0; display: flex; justify-content: flex-end; background: rgba(74,55,40,.26); }
+    .drawer { width: min(480px,100%); height: 100%; overflow-y: auto; background: #fffaf5; box-shadow: -12px 0 36px rgba(48,38,31,.2); }
+    .drawer-head { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 17px 18px; border-bottom: 1px solid var(--line); background: #fffaf5; }
+    .drawer-head h2 { margin: 0; color: var(--rose-dark); font-size: 1.15rem; }
+    .close-button { width: 38px; height: 38px; border: 0; color: var(--rose-dark); background: transparent; cursor: pointer; font-size: 1.55rem; line-height: 1; }
+    .settings-form { display: grid; gap: 15px; padding: 18px; }
+    .setting-note { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.6; }
+    fieldset { min-width: 0; margin: 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; }
+    legend { padding: 0 6px; color: var(--rose-dark); font-weight: 800; }
+    .field { display: grid; gap: 5px; margin-bottom: 11px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { color: var(--muted); font-size: .8rem; font-weight: 750; }
+    .field input, .field textarea, .model-select {
+      width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #bea8aa; border-radius: 8px;
+      color: var(--ink); background: #fff; font-size: 16px;
+    }
+    .field textarea { min-height: 172px; resize: vertical; line-height: 1.5; }
+    .model-select { min-height: 42px; margin-top: 7px; }
+    .inline, .card-tools { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 7px; align-items: stretch; }
+    .quick-picks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .small-button, .danger-button, .upload-label { min-height: 40px; padding: 7px 11px; border: 1px solid #b9828a; border-radius: 8px; color: var(--rose-dark); background: #fff; cursor: pointer; font-weight: 750; }
+    .quick-picks .small-button { min-height: 33px; font-size: .75rem; }
+    .card-tools { margin-bottom: 8px; }
+    .upload-label { position: relative; display: grid; place-items: center; text-align: center; }
+    .upload-label input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .avatar-upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .avatar-slot { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .avatar-preview { flex: none; display: grid; place-items: center; width: 44px; height: 44px; overflow: hidden; border: 2px solid #e6d2c4; border-radius: 50%; color: var(--rose-dark); background: var(--rose-soft); font-weight: 800; }
+    .avatar-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .avatar-preview img[hidden] { display: none; }
+    .avatar-slot .upload-label { min-width: 0; flex: 1; font-size: .76rem; }
+    .status { min-height: 1.5em; margin: 7px 0 0; color: var(--muted); font-size: .8rem; }
+    .privacy-mini { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.55; }
+    .danger-button { color: #8c3232; border-color: #c99191; }
+    @media (max-width: 620px) {
+      .page { padding: 22px 14px 34px; }
+      .rooms { grid-template-columns: minmax(0, 1fr); gap: 15px; }
+      .room { min-height: 272px; }
+      .intro { margin-bottom: 22px; }
+    }
+    @media (max-width: 390px) {
+      .page { padding-inline: 11px; }
+      .eyebrow { font-size: .66rem; }
+      h1 { font-size: 2rem; }
+      .room { padding-inline: 14px; }
+      .avatar-upload-grid { grid-template-columns: minmax(0,1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) { a.room { transition: none; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><p class="eyebrow">棋室</p><h1>Chambre de Jeux</h1></div>
+      <button id="settingsButton" class="settings-button" type="button">設定</button>
+    </header>
+    <p class="intro">把角色卡留在大廳，他就會帶著同一份身分，陪你走進每一個房間。</p>
+
+    <section class="rooms" aria-label="棋室房間">
+      <a class="room" href="../cartes/">
+        <img class="sign sign-img" src="assets/room_cards.png" alt="" aria-hidden="true">
+        <h2 class="room-name">Cartes</h2><p class="room-cn">牌桌</p>
+        <p class="room-copy">讓角色當莊家陪你玩 21 點與十點半。</p>
+      </a>
+      <a class="room" href="../echecs/">
+        <img class="sign sign-img" src="assets/room_chess.png" alt="" aria-hidden="true">
+        <h2 class="room-name">Échecs</h2><p class="room-cn">西洋棋</p>
+        <p class="room-copy">讓角色坐對面陪你下棋、會教會記仇。</p>
+      </a>
+      <article class="room disabled" aria-disabled="true">
+        <span class="building">施工中</span><img class="sign sign-img" src="assets/room_gomoku.png" alt="" aria-hidden="true">
+        <h2 class="room-name">Gomoku</h2><p class="room-cn">五子棋</p>
+        <p class="room-copy">棋盤還在整理，開門時會把同一個他接進來。</p>
+      </article>
+      <article class="room disabled" aria-disabled="true">
+        <span class="building">施工中</span><img class="sign sign-img" src="assets/room_banqi.png" alt="" aria-hidden="true">
+        <h2 class="room-name">Banqi</h2><p class="room-cn">暗棋</p>
+        <p class="room-copy">棋子還沒翻面，房間準備好後再來坐。</p>
+      </article>
+    </section>
+
+    <section class="seat-card" aria-live="polite" aria-label="已就座狀態">
+      <div class="seat-avatar"><img id="seatAvatar" alt="角色頭像" hidden><span id="seatFallback" class="seat-fallback">他</span></div>
+      <div class="seat-copy"><p class="seat-label">已就座</p><p id="seatTitle" class="seat-title">還沒設定，各房他不會開口</p><p id="seatMeta" class="seat-meta">到右上角貼好 API 與角色卡。還沒有金鑰？<a href="guide.html">看圖文教學</a></p></div>
+    </section>
+
+    <footer>這是純靜態頁面。金鑰與角色卡只存在你自己的瀏覽器；只有各房角色開口或你主動撈模型清單時，才會向你填寫的端點送出請求。共用電腦用完請清除。</footer>
+  </main>
+
+  <div id="settingsOverlay" class="drawer-overlay" hidden>
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <header class="drawer-head"><h2 id="settingsTitle">棋室共用設定</h2><button class="close-button" type="button" data-close-settings aria-label="關閉">×</button></header>
+      <form id="settingsForm" class="settings-form">
+        <p class="setting-note">在這裡貼一次，牌桌與棋局就能讀同一把鑰匙、同一張角色卡。</p>
+        <fieldset>
+          <legend>API</legend>
+          <div class="quick-picks" aria-label="端點快選">
+            <button class="small-button" type="button" data-endpoint-preset="google">Google AI Studio</button>
+            <button class="small-button" type="button" data-endpoint-preset="openrouter">OpenRouter</button>
+            <button class="small-button" type="button" data-endpoint-preset="custom">自訂</button>
+          </div>
+          <div class="field"><label for="endpointInput">端點網址</label><input id="endpointInput" name="endpoint" autocomplete="url"></div>
+          <div class="field"><label for="apiKeyInput">金鑰</label><div class="inline"><input id="apiKeyInput" name="apiKey" type="password" autocomplete="off"><button id="toggleKeyButton" class="small-button" type="button">顯示</button></div></div>
+          <p class="field-hint">還沒有金鑰？<a href="guide.html">看圖文教學</a>（免費、不用綁卡）</p>
+          <div class="field"><label for="modelInput">模型名</label><div class="inline"><input id="modelInput" name="model" autocomplete="off"><button id="loadModelsButton" class="small-button" type="button">撈清單</button></div><select id="modelSelect" class="model-select" aria-label="模型清單" hidden></select></div>
+          <p id="modelStatus" class="status" aria-live="polite"></p>
+        </fieldset>
+        <fieldset>
+          <legend>角色卡</legend>
+          <div class="card-tools"><label class="upload-label">匯入卡包<input id="cardFileInput" type="file" accept=".png,.json,.md,.txt,image/png,application/json,text/plain,text/markdown"></label><button id="exportCardButton" class="small-button" type="button">匯出卡包</button></div>
+          <p id="cardStatus" class="status" aria-live="polite">支援酒館 PNG、JSON、Markdown 與純文字；也可以直接手填。</p>
+          <div class="field"><label for="characterNameInput">角色名</label><input id="characterNameInput" name="characterName" autocomplete="off"></div>
+          <div class="field"><label for="characterDescriptionInput">角色描述</label><textarea id="characterDescriptionInput" name="characterDescription" placeholder="外觀、性格、說話風格"></textarea></div>
+          <div class="field"><label for="playerNameInput">玩家稱呼（他怎麼叫你）</label><input id="playerNameInput" name="playerName" value="你" autocomplete="off"></div>
+          <div class="avatar-upload-grid">
+            <div class="avatar-slot"><span class="avatar-preview"><img id="characterAvatarPreview" alt="角色頭像預覽" hidden><span id="characterPreviewEmpty">他</span></span><label class="upload-label">他的頭像<input id="characterAvatarInput" type="file" accept="image/*"></label></div>
+            <div class="avatar-slot"><span class="avatar-preview"><img id="playerAvatarPreview" alt="玩家頭像預覽" hidden><span id="playerPreviewEmpty">你</span></span><label class="upload-label">你的頭像<input id="playerAvatarInput" type="file" accept="image/*"></label></div>
+          </div>
+          <p id="avatarStatus" class="status" aria-live="polite">頭像會縮至 256 像素後儲存。</p>
+        </fieldset>
+        <p class="privacy-mini">資料只存在這個瀏覽器的本站儲存空間。大廳沒有後端，也不會替你傳走金鑰或角色卡。</p>
+        <button id="clearButton" class="danger-button" type="button">清除所有資料</button>
+      </form>
+    </aside>
+  </div>
+
+  <script>
+    "use strict";
+    const SETTINGS_KEY = "chambre_settings_v1";
+    const SETTINGS_FIELDS = ["endpoint","apiKey","model","characterName","characterDescription","playerName","avatarDataUrl","playerAvatarDataUrl"];
+    const API_TIMEOUT_MS = 20000;
+    const elements = Object.fromEntries(Array.from(document.querySelectorAll("[id]")).map(node => [node.id,node]));
+
+    function defaultSettings() {
+      return { v: 1, endpoint: "", apiKey: "", model: "", characterName: "", characterDescription: "", playerName: "你", avatarDataUrl: "", playerAvatarDataUrl: "", updatedAt: 0 };
+    }
+    function safeGet(key) { try { return localStorage.getItem(key); } catch (_error) { return null; } }
+    function safeSet(key,value) { try { localStorage.setItem(key,value); return true; } catch (_error) { return false; } }
+    function readSettings() {
+      try {
+        const raw = JSON.parse(safeGet(SETTINGS_KEY) || "null");
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) return defaultSettings();
+        const clean = defaultSettings();
+        for (const field of SETTINGS_FIELDS) if (typeof raw[field] === "string") clean[field] = raw[field];
+        clean.updatedAt = Number.isFinite(Number(raw.updatedAt)) ? Number(raw.updatedAt) : 0;
+        return clean;
+      } catch (_error) { return defaultSettings(); }
+    }
+    let settings = readSettings();
+
+    function writeSettings() {
+      const payload = { v: 1 };
+      for (const field of SETTINGS_FIELDS) payload[field] = typeof settings[field] === "string" ? settings[field] : "";
+      payload.playerName = payload.playerName || "你";
+      payload.updatedAt = Date.now();
+      settings = payload;
+      safeSet(SETTINGS_KEY,JSON.stringify(payload));
+      return payload;
+    }
+    function formToSettings() {
+      return {
+        ...settings,
+        endpoint: elements.endpointInput.value.trim().replace(/\/+$/, ""),
+        apiKey: elements.apiKeyInput.value.trim(),
+        model: elements.modelInput.value.trim(),
+        characterName: elements.characterNameInput.value.trim(),
+        characterDescription: elements.characterDescriptionInput.value,
+        playerName: elements.playerNameInput.value.trim() || "你"
+      };
+    }
+    function settingsToForm() {
+      elements.endpointInput.value = settings.endpoint;
+      elements.endpointInput.placeholder = "https:" + "//generativelanguage.googleapis.com/v1beta/openai";
+      elements.apiKeyInput.value = settings.apiKey;
+      elements.modelInput.value = settings.model;
+      elements.characterNameInput.value = settings.characterName;
+      elements.characterDescriptionInput.value = settings.characterDescription;
+      elements.playerNameInput.value = settings.playerName || "你";
+    }
+    function setImage(image,empty,dataUrl) {
+      if (dataUrl) { image.src = dataUrl; image.hidden = false; empty.hidden = true; }
+      else { image.removeAttribute("src"); image.hidden = true; empty.hidden = false; }
+    }
+    function endpointHost(value) {
+      try { return new URL(value).hostname || "自訂端點"; } catch (_error) { return value ? "自訂端點" : ""; }
+    }
+    function settingsComplete(value = settings) {
+      return Boolean(value.endpoint.trim() && value.apiKey.trim() && value.model.trim() && value.characterName.trim());
+    }
+    function renderIdentity() {
+      setImage(elements.seatAvatar,elements.seatFallback,settings.avatarDataUrl);
+      setImage(elements.characterAvatarPreview,elements.characterPreviewEmpty,settings.avatarDataUrl);
+      setImage(elements.playerAvatarPreview,elements.playerPreviewEmpty,settings.playerAvatarDataUrl);
+      if (settingsComplete()) {
+        elements.seatTitle.textContent = settings.characterName + " 已就座";
+        elements.seatMeta.textContent = "他稱呼你為「" + (settings.playerName || "你") + "」｜" + endpointHost(settings.endpoint);
+      } else {
+        elements.seatTitle.textContent = "還沒設定，各房他不會開口";
+        elements.seatMeta.textContent = "";
+        elements.seatMeta.append("到右上角貼好 API 與角色卡。還沒有金鑰？");
+        const guideLink = document.createElement("a"); guideLink.href = "guide.html"; guideLink.textContent = "看圖文教學"; elements.seatMeta.append(guideLink);
+      }
+    }
+    function persistSettings() { settings = formToSettings(); writeSettings(); renderIdentity(); return settings; }
+
+    function flattenObject(value,prefix = "",out = []) {
+      if (value === null || value === undefined) return out;
+      if (typeof value !== "object") { out.push((prefix ? prefix + ": " : "") + String(value)); return out; }
+      if (Array.isArray(value)) { value.forEach((item,index) => flattenObject(item,prefix ? prefix + "[" + index + "]" : String(index),out)); return out; }
+      Object.entries(value).forEach(([key,item]) => flattenObject(item,prefix ? prefix + "." + key : key,out)); return out;
+    }
+    function normalizeCharacterCard(raw) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("角色卡不是物件");
+      const card = raw.spec === "chara_card_v2" && raw.data && typeof raw.data === "object" ? raw.data : raw.data && raw.name === undefined && typeof raw.data === "object" ? raw.data : raw;
+      const standard = ["description","personality","scenario","mes_example"].some(key => typeof card[key] === "string");
+      if (!standard) {
+        const name = String(card.character_name || card.char_name || card.title || card.name || "").trim();
+        return { name, description: flattenObject(card).join("\n") };
+      }
+      const blocks = [];
+      for (const key of ["description","personality","scenario"]) if (String(card[key] || "").trim()) blocks.push(String(card[key]).trim());
+      const sample = String(card.mes_example || "").trim().slice(0,600);
+      if (sample) blocks.push("【語氣樣本】\n" + sample);
+      return { name: String(card.name || card.character_name || "").trim(), description: blocks.join("\n\n") };
+    }
+    function bytesToText(bytes) { return new TextDecoder("utf-8",{ fatal: false }).decode(bytes); }
+    function base64ToBytes(text) { const binary = atob(String(text).replace(/\s/g,"")); return Uint8Array.from(binary,char => char.charCodeAt(0)); }
+    function parseTavernPngBytes(bytes) {
+      const signature = [137,80,78,71,13,10,26,10];
+      if (bytes.length < 8 || signature.some((value,index) => bytes[index] !== value)) throw new Error("不是 PNG 檔");
+      const view = new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength); let offset = 8;
+      while (offset + 12 <= bytes.length) {
+        const length = view.getUint32(offset); const type = bytesToText(bytes.slice(offset + 4,offset + 8)); const start = offset + 8, end = start + length;
+        if (end + 4 > bytes.length) throw new Error("PNG 區塊不完整");
+        if (type === "tEXt") {
+          const chunk = bytes.slice(start,end), zero = chunk.indexOf(0), key = zero >= 0 ? bytesToText(chunk.slice(0,zero)) : "";
+          if (key === "chara") return JSON.parse(bytesToText(base64ToBytes(bytesToText(chunk.slice(zero + 1)))));
+        }
+        offset = end + 4;
+      }
+      throw new Error("PNG 裡找不到 chara 角色卡");
+    }
+    function readFileBytes(file) { return file.arrayBuffer().then(buffer => new Uint8Array(buffer)); }
+    function readFileText(file) { return file.text(); }
+    async function resizeAvatar(file,maxSize = 256) {
+      let bitmap = null;
+      try { bitmap = await createImageBitmap(file); } catch (_error) { bitmap = null; }
+      if (!bitmap) {
+        const dataUrl = await new Promise((resolve,reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(new Error("讀檔失敗")); reader.readAsDataURL(file); });
+        bitmap = await new Promise((resolve,reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = () => reject(new Error("圖片解不開，請改用 JPEG 或 PNG")); image.src = dataUrl; });
+      }
+      const width = bitmap.naturalWidth || bitmap.width, height = bitmap.naturalHeight || bitmap.height;
+      if (!width || !height) throw new Error("圖片尺寸讀不到");
+      const scale = Math.min(1,maxSize / Math.max(width,height));
+      const canvas = document.createElement("canvas"); canvas.width = Math.max(1,Math.round(width * scale)); canvas.height = Math.max(1,Math.round(height * scale));
+      canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);
+      if (typeof bitmap.close === "function") bitmap.close();
+      const out = canvas.toDataURL("image/jpeg",.85);
+      if (!out || out.length < 100) throw new Error("縮圖輸出失敗");
+      return out;
+    }
+    function applyParsedCard(parsed,avatarDataUrl = "",avatarProvided = false) {
+      elements.characterNameInput.value = parsed.name || "";
+      elements.characterDescriptionInput.value = parsed.description || "";
+      settings.characterName = elements.characterNameInput.value;
+      settings.characterDescription = elements.characterDescriptionInput.value;
+      if (avatarProvided) settings.avatarDataUrl = String(avatarDataUrl || "");
+      persistSettings();
+      return { name: settings.characterName, description: settings.characterDescription, avatarStored: Boolean(settings.avatarDataUrl) };
+    }
+    function importJsonPayload(raw) {
+      if (raw?.type === "chambre_card_v1" || raw?.type === "cartes_card_v1") return applyParsedCard({ name: String(raw.name || ""), description: String(raw.description || "") },String(raw.avatarDataUrl || ""),true);
+      return applyParsedCard(normalizeCharacterCard(raw));
+    }
+    async function parseCardFile(file) {
+      const lower = String(file.name || "").toLowerCase(); let parsed;
+      if (lower.endsWith(".png") || file.type === "image/png") {
+        parsed = normalizeCharacterCard(parseTavernPngBytes(await readFileBytes(file)));
+        const avatar = await resizeAvatar(file);
+        return applyParsedCard(parsed,avatar,true);
+      }
+      if (lower.endsWith(".json") || file.type === "application/json") return importJsonPayload(JSON.parse(await readFileText(file)));
+      if (lower.endsWith(".md") || lower.endsWith(".txt") || String(file.type || "").startsWith("text/")) return applyParsedCard({ name: "", description: await readFileText(file) });
+      throw new Error("不支援的檔案格式");
+    }
+    function downloadJson(payload,filename) {
+      const blob = new Blob([JSON.stringify(payload,null,2)],{ type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = url; link.download = filename; document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url),0);
+      return filename;
+    }
+    function cardPackage() {
+      persistSettings();
+      return { type: "chambre_card_v1", name: settings.characterName, description: settings.characterDescription, avatarDataUrl: settings.avatarDataUrl || "" };
+    }
+    function exportCard() {
+      const payload = cardPackage(), name = (payload.name.trim() || "角色").replace(/[\\/:*?"<>|]/g,"_");
+      return downloadJson(payload,name + "_卡包.json");
+    }
+    async function setAvatarFromFile(file,key) {
+      if (!file || !String(file.type || "").startsWith("image/")) throw new Error("請選擇圖片檔");
+      const dataUrl = await resizeAvatar(file);
+      settings[key] = dataUrl;
+      writeSettings(); renderIdentity(); return settings[key];
+    }
+    async function handleImportInput(input) {
+      const file = input.files?.[0]; if (!file) return null;
+      elements.cardStatus.textContent = "正在辨識匯入檔…";
+      try {
+        const result = await parseCardFile(file);
+        elements.cardStatus.textContent = "已載入" + (result.name ? "「" + result.name + "」" : "文字角色卡") + "。";
+        return result;
+      } catch (error) { elements.cardStatus.textContent = "匯入失敗：" + (error?.message || "未知原因"); return null; }
+      finally { input.value = ""; }
+    }
+    async function loadModels() {
+      persistSettings(); elements.modelStatus.textContent = "正在撈清單…"; elements.modelSelect.hidden = true; elements.modelSelect.replaceChildren();
+      if (!settings.endpoint || !settings.apiKey) { elements.modelStatus.textContent = "撈不到，請手填"; return false; }
+      const controller = new AbortController(), timer = setTimeout(() => controller.abort(),API_TIMEOUT_MS);
+      try {
+        const response = await fetch(settings.endpoint.replace(/\/+$/,"") + "/models",{ headers: { Authorization: "Bearer " + settings.apiKey }, signal: controller.signal });
+        if (!response.ok) throw new Error("bad response");
+        const data = await response.json(), rows = Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [];
+        const names = rows.map(row => String(typeof row === "string" ? row : row.id || row.name || "").replace(/^models\//,"")).filter(Boolean);
+        if (!names.length) throw new Error("empty");
+        const placeholder = document.createElement("option"); placeholder.value = ""; placeholder.textContent = "從清單挑一個模型…"; placeholder.disabled = true; placeholder.selected = true;
+        elements.modelSelect.replaceChildren(placeholder,...names.map(name => { const option = document.createElement("option"); option.value = name; option.textContent = name; return option; }));
+        elements.modelSelect.hidden = false; elements.modelStatus.textContent = "找到 " + names.length + " 個模型，從下拉挑或手填。"; return names;
+      } catch (_error) { elements.modelStatus.textContent = "撈不到，請手填"; return false; }
+      finally { clearTimeout(timer); }
+    }
+    function clearAllData(skipConfirm = false) {
+      if (!skipConfirm && !confirm("清除棋室共用的金鑰、角色卡與頭像？各房自己的資料不會刪除。")) return false;
+      try { localStorage.removeItem(SETTINGS_KEY); } catch (_error) {}
+      settings = defaultSettings(); settingsToForm(); renderIdentity();
+      elements.modelSelect.hidden = true; elements.modelSelect.replaceChildren(); elements.modelStatus.textContent = "";
+      elements.cardStatus.textContent = "棋室共用資料已清除。"; elements.avatarStatus.textContent = "頭像已清除。";
+      return true;
+    }
+
+    elements.settingsButton.addEventListener("click",() => { elements.settingsOverlay.hidden = false; elements.endpointInput.focus(); });
+    elements.settingsOverlay.addEventListener("click",event => { if (event.target === elements.settingsOverlay || event.target.closest("[data-close-settings]")) { persistSettings(); elements.settingsOverlay.hidden = true; } });
+    const persistUnlessFile = event => { if (event.target && event.target.type === "file") return; persistSettings(); };
+    elements.settingsForm.addEventListener("input",persistUnlessFile);
+    elements.settingsForm.addEventListener("change",persistUnlessFile);
+    document.querySelectorAll("[data-endpoint-preset]").forEach(button => button.addEventListener("click",() => {
+      const preset = button.dataset.endpointPreset;
+      elements.endpointInput.value = preset === "google" ? "https:" + "//generativelanguage.googleapis.com/v1beta/openai" : preset === "openrouter" ? "https:" + "//openrouter.ai/api/v1" : "";
+      persistSettings(); if (preset === "custom") elements.endpointInput.focus();
+    }));
+    elements.toggleKeyButton.addEventListener("click",() => { const showing = elements.apiKeyInput.type === "text"; elements.apiKeyInput.type = showing ? "password" : "text"; elements.toggleKeyButton.textContent = showing ? "顯示" : "隱藏"; });
+    elements.loadModelsButton.addEventListener("click",() => void loadModels());
+    elements.modelSelect.addEventListener("change",() => { if (!elements.modelSelect.value) return; elements.modelInput.value = elements.modelSelect.value; persistSettings(); elements.modelStatus.textContent = "已選 " + elements.modelSelect.value; });
+    elements.cardFileInput.addEventListener("change",() => void handleImportInput(elements.cardFileInput));
+    elements.exportCardButton.addEventListener("click",exportCard);
+    elements.characterAvatarInput.addEventListener("change",async () => { const file = elements.characterAvatarInput.files?.[0]; if (!file) return; elements.avatarStatus.textContent = "正在處理他的頭像…"; try { await setAvatarFromFile(file,"avatarDataUrl"); elements.avatarStatus.textContent = "他的頭像已儲存。"; } catch (error) { elements.avatarStatus.textContent = "頭像失敗：" + (error?.message || "未知原因"); } finally { elements.characterAvatarInput.value = ""; } });
+    elements.playerAvatarInput.addEventListener("change",async () => { const file = elements.playerAvatarInput.files?.[0]; if (!file) return; elements.avatarStatus.textContent = "正在處理你的頭像…"; try { await setAvatarFromFile(file,"playerAvatarDataUrl"); elements.avatarStatus.textContent = "你的頭像已儲存。"; } catch (error) { elements.avatarStatus.textContent = "頭像失敗：" + (error?.message || "未知原因"); } finally { elements.playerAvatarInput.value = ""; } });
+    elements.clearButton.addEventListener("click",() => clearAllData(false));
+    document.addEventListener("keydown",event => { if (event.key === "Escape" && !elements.settingsOverlay.hidden) { persistSettings(); elements.settingsOverlay.hidden = true; elements.settingsButton.focus(); } });
+
+    settingsToForm(); renderIdentity();
+    window.__chambreTest = Object.freeze({ readSettings, writeSettings, persistSettings, clearAllData, normalizeCharacterCard, parseTavernPngBytes, parseCardFile, applyParsedCard, importJsonPayload, cardPackage, loadModels, getSettings: () => ({ ...settings }) });
+  </script>
+</body>
+</html>
