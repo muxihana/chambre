@@ -34,7 +34,12 @@
     }
     .home-link { grid-column: 3; justify-self: end; padding: 8px 0; color: #a08a8d; text-decoration: none; font-size: .82rem; white-space: nowrap; }
     .home-link:active { color: var(--rose); }
-    .intro { max-width: 500px; margin: 24px auto 30px; color: var(--muted); text-align: center; font-size: .92rem; line-height: 1.75; }
+    .intro { max-width: 500px; margin: 24px auto 18px; color: var(--muted); text-align: center; font-size: .92rem; line-height: 1.75; }
+    html { scroll-behavior: smooth; }
+    .toc { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 auto 8px; padding: 0; list-style: none; }
+    .toc a { display: inline-block; padding: 7px 13px; border: 1px solid #d9b2b8; border-radius: 999px; color: var(--rose-dark); background: var(--paper); text-decoration: none; font-size: .8rem; font-weight: 750; }
+    .toc a:active { background: var(--rose-soft); }
+    h2 { scroll-margin-top: 14px; }
     h2 { margin: 38px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); color: var(--rose-dark); font-size: 1.05rem; letter-spacing: .08em; }
     .step { margin: 0 0 26px; }
     .step p { margin: 0 0 10px; line-height: 1.8; font-size: .95rem; }
@@ -58,8 +63,14 @@
       <a class="home-link" href="./">回棋室</a>
     </header>
     <p class="intro">不用裝任何程式，只要一把 API 金鑰。Google AI Studio 有免費額度，免費層不用綁信用卡。整趟大約兩分鐘，手機也能做。</p>
+    <ul class="toc" aria-label="目錄">
+      <li><a href="#key">拿金鑰</a></li>
+      <li><a href="#free">確認免費層</a></li>
+      <li><a href="#settings">設定頁怎麼填</a></li>
+      <li><a href="#others">其他供應商</a></li>
+    </ul>
 
-    <h2>拿金鑰</h2>
+    <h2 id="key">拿金鑰</h2>
 
     <section class="step">
       <p class="lead"><span class="num">1</span>開 AI Studio，登入 Google 帳號。</p>
@@ -94,7 +105,7 @@
       <p>按「Google AI Studio」快選鈕代填端點，把金鑰貼進「金鑰」欄，按「撈清單」挑模型。建議 <code>gemini-3.1-flash-lite</code>：快、免費層額度夠房內短對話；供應商調整可用模型時，以撈到的清單為準。</p>
     </section>
 
-    <h2>確認自己是免費層</h2>
+    <h2 id="free">確認自己是免費層</h2>
 
     <section class="step">
       <p>回到 API Keys 頁看金鑰卡片：紅箭頭處「Billing tier」寫 <strong>Free tier</strong> 就是免費層；橘箭頭那個長條圖圖示是看流量，點進去能看今天用掉多少、有沒有撞到每分鐘上限。</p>
@@ -112,7 +123,7 @@
       <p class="note">免費層有每分鐘次數上限，玩到一半他不說話，等一分鐘再試多半就好。真的要開計費是另一回事，這裡不教。</p>
     </section>
 
-    <h2>設定頁逐欄怎麼填</h2>
+    <h2 id="settings">設定頁逐欄怎麼填</h2>
 
     <section class="step">
       <p class="lead"><span class="num">1</span>打開大廳，按右上角「設定」。</p>
@@ -121,9 +132,10 @@
 
     <section class="step">
       <p class="lead"><span class="num">2</span>API 這格三欄。</p>
-      <p><strong>端點網址</strong>：不用自己打，按「Google AI Studio」快選鈕就填好了。<br>
-      <strong>金鑰</strong>：把上面複製的那串貼進來，按「顯示」可以檢查有沒有貼錯。<br>
-      <strong>模型名</strong>：按「撈清單」，從下拉挑 <code>gemini-3.1-flash-lite</code>；撈不到就直接手打這個名字。</p>
+      <p><strong>端點網址</strong>（紅箭頭）：不用自己打，按「Google AI Studio」快選鈕就填好了。<br>
+      <strong>金鑰</strong>（橘箭頭）：把上面複製的那串貼進來，按「顯示」可以檢查有沒有貼錯。<br>
+      <strong>模型名</strong>（黃箭頭）：按「撈清單」，再從下拉（藍箭頭）挑 <code>gemini-3.1-flash-lite</code>，下面會寫「已選」；撈不到就直接手打這個名字。</p>
+      <img class="shot" src="assets/guide/10.jpg" alt="設定頁 API 區：快選鈕、金鑰欄、撈清單與下拉" loading="lazy">
     </section>
 
     <section class="step">
@@ -138,7 +150,7 @@
       <p class="note">他不說話的三個常見原因：模型名打錯（回設定按「撈清單」重挑）、金鑰貼到多餘的空白、免費層一分鐘內問太多次（等一分鐘再試）。</p>
     </section>
 
-    <h2>其他供應商與保管</h2>
+    <h2 id="others">其他供應商與保管</h2>
 
     <section class="step">
       <p>也可以使用 OpenRouter：按快選鈕，填入它提供的金鑰與模型名即可。請只使用你信任的 API 供應商。</p>
