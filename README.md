@@ -84,3 +84,5 @@
 ## 授權
 
 本專案採用 [MIT License](LICENSE)（Copyright (c) 2026 Muxi / muxihana）。
+
+各房間是獨立的 repo、各自授權：牌桌 Cartes、五子棋 Gomoku、暗棋 Banqi 為 MIT；西洋棋 Échecs 因打包 Stockfish 引擎，整包為 GPLv3。大廳只以連結連到各房，不含任何房間的程式碼。
