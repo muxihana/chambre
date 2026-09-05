@@ -112,6 +112,32 @@
       <p class="note">免費層有每分鐘次數上限，玩到一半他不說話，等一分鐘再試多半就好。真的要開計費是另一回事，這裡不教。</p>
     </section>
 
+    <h2>設定頁逐欄怎麼填</h2>
+
+    <section class="step">
+      <p class="lead"><span class="num">1</span>打開大廳，按右上角「設定」。</p>
+      <p>每個房間右上角也有「設定」，填哪裡都一樣，五頁共用同一份。</p>
+    </section>
+
+    <section class="step">
+      <p class="lead"><span class="num">2</span>API 這格三欄。</p>
+      <p><strong>端點網址</strong>：不用自己打，按「Google AI Studio」快選鈕就填好了。<br>
+      <strong>金鑰</strong>：把上面複製的那串貼進來，按「顯示」可以檢查有沒有貼錯。<br>
+      <strong>模型名</strong>：按「撈清單」，從下拉挑 <code>gemini-3.1-flash-lite</code>；撈不到就直接手打這個名字。</p>
+    </section>
+
+    <section class="step">
+      <p class="lead"><span class="num">3</span>角色卡這格。</p>
+      <p>有酒館卡就按「匯入卡包」上傳 PNG 或 JSON，角色名和描述會自己填好。沒有卡也行，「角色名」和「角色描述」兩欄直接手打幾句外觀、性格、說話風格，他就照這個當人。<br>
+      <strong>玩家稱呼</strong>是他叫你什麼，留空他就叫你「你」。頭像是選填，不放就用字母圓圈。</p>
+    </section>
+
+    <section class="step">
+      <p class="lead"><span class="num">4</span>關掉設定，看大廳那張席卡。</p>
+      <p>寫「某某 已就座」就是設好了，點任一房卡進去他就會開口。還寫「還沒設定」的話，多半是金鑰或模型名其中一欄空著，回設定補上。</p>
+      <p class="note">他不說話的三個常見原因：模型名打錯（回設定按「撈清單」重挑）、金鑰貼到多餘的空白、免費層一分鐘內問太多次（等一分鐘再試）。</p>
+    </section>
+
     <h2>其他供應商與保管</h2>
 
     <section class="step">
